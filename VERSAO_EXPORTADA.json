@@ -1,0 +1,15 @@
+{
+  "published_version": 7,
+  "source_commit": "8dabfe80b811ea60f587410dfbaf766b73c3671f",
+  "published_url": "https://museu-invisivel.frostytiger8.chatgpt.site",
+  "export_date": "2026-10-15",
+  "source_files_copied": 155,
+  "source_changes": "Nenhum código alterado; documentação de exportação adicionada.",
+  "excluded": [
+    "dist (gerado)",
+    "node_modules",
+    ".git",
+    "ZIP antigo em public/downloads",
+    "dados locais do navegador e credenciais"
+  ]
+}

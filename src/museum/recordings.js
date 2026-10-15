@@ -1,0 +1,9 @@
+export class RecordingStore {
+ constructor(){this.database=null;this.urls=new Map();this.session=new Map();}
+ async db(){if(this.database)return this.database;if(!globalThis.indexedDB)throw new Error('Armazenamento de áudio indisponível neste navegador.');this.database=await new Promise((resolve,reject)=>{const request=indexedDB.open('entre-telas-recordings',1);request.onupgradeneeded=()=>request.result.createObjectStore('audio');request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});return this.database;}
+ async get(key){if(this.session.has(key))return this.session.get(key);const db=await this.db();return new Promise((resolve,reject)=>{const request=db.transaction('audio').objectStore('audio').get(key);request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+ async put(key,file){if(!/\.mp3$/i.test(file.name))throw new Error('Escolha um arquivo MP3.');if(!file.size)throw new Error('O arquivo está vazio.');if(file.size>50*1024*1024)throw new Error('Use um MP3 de até 50 MB.');this.invalidate(key);const record={blob:file,name:file.name};const db=await this.db();await new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').put(record,key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});return record;}
+ async remove(key){this.invalidate(key);const db=await this.db();await new Promise((resolve,reject)=>{const tx=db.transaction('audio','readwrite');tx.objectStore('audio').delete(key);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
+ invalidate(key){if(this.urls.has(key)){URL.revokeObjectURL(this.urls.get(key));this.urls.delete(key);}this.session.delete(key);}
+ async url(key){const record=await this.get(key);if(!record)return null;if(!this.urls.has(key))this.urls.set(key,URL.createObjectURL(record.blob));return {url:this.urls.get(key),name:record.name};}
+}
